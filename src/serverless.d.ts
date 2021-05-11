@@ -32,14 +32,16 @@ declare namespace Serverless {
     }
 
     classes: {
-      Error: { new(message: string): ServerlessError }
+      Error: { new (message: string): ServerlessError }
     }
 
     variables: {
       variableSyntax: RegExp
+      populateProperty: (rawProperty: string) => Promise<string>
       loadVariableSyntax: () => void
       getProperties: (root: object, onRoot: boolean, current: object) => VariableProperty[]
       getMatches: (value: string) => VariableMatch[] | undefined
+      options: any
     }
 
     pluginManager: {
