@@ -37,6 +37,7 @@ declare namespace Serverless {
 
     variables: {
       variableSyntax: RegExp
+      populateService: (options: any) => Promise<any>
       populateProperty: (rawProperty: string) => Promise<string>
       loadVariableSyntax: () => void
       getProperties: (root: object, onRoot: boolean, current: object) => VariableProperty[]

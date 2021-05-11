@@ -2,6 +2,7 @@ import * as path from "path"
 import { statSync, realpathSync } from "fs"
 import set from "lodash.set"
 import difference from "lodash.difference"
+import cloneDeep from "lodash.clonedeep"
 import merge from "./merge"
 import { tryOrUndefined, resolveModule } from "./utils"
 
@@ -33,10 +34,12 @@ interface BasedirOption {
 
 class ImportConfigPlugin {
   serverless: Serverless.Instance
+  options: any
   originalPlugins: string[]
 
-  constructor(serverless: Serverless.Instance) {
+  constructor(serverless: Serverless.Instance, options: any) {
     this.serverless = serverless
+    this.options = options
     this.originalPlugins = this.serverless.service.plugins?.slice() ?? []
 
     this.importConfigs(this.serverless.service, { basedir: REALPATH }).catch((error) => {
@@ -62,8 +65,9 @@ class ImportConfigPlugin {
 
   private async resolvePathToImport(rawPath: string, { basedir }: BasedirOption): Promise<string> {
     const { variables } = this.serverless
-    variables.loadVariableSyntax()
-    variables.options = this.serverless.service
+
+    await variables.populateService(this.options)
+
     const pathToImport = await variables.populateProperty(rawPath)
     variables.options = undefined
     // pass if has config extension
@@ -174,7 +178,7 @@ class ImportConfigPlugin {
       this.importConfigs(config, { basedir: path.dirname(importPath) })
     } catch (error) {
       throw new this.serverless.classes.Error(
-        `Error: Cannot import ${pathToImport}\nCause: ${error.message}`
+        `Error: Cannot import ${importPath}\nCause: ${error.message}`
       )
     }
     merge(this.serverless.service, config)
